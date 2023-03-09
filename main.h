@@ -1,5 +1,5 @@
 #define STOCK_ROM
 
-int readAddress();
-void outputByte(int address);
+unsigned int readAddress();
+void outputByte(unsigned address);
 void pinSetup();

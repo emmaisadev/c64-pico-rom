@@ -1,5 +1,6 @@
 #include "pico/stdlib.h"
 #include "pins.h"
+#include "main.h"
 
 
 #ifdef STOCK_ROM
@@ -10,7 +11,7 @@
 int main() {
   pinSetup();
 
-  long int address = 0x0000;
+  unsigned address = 0;
 
   while (true) {
     if (!gpio_get(CE)) {
@@ -20,44 +21,42 @@ int main() {
   }
 }
 
-int readAddress() {
-  char address[14] = {
-    gpio_get(A0),
-    gpio_get(A1),
-    gpio_get(A2),
-    gpio_get(A3),
-    gpio_get(A4),
-    gpio_get(A5),
-    gpio_get(A6),
-    gpio_get(A7),
-    gpio_get(A8),
-    gpio_get(A9),
-    gpio_get(A10),
-    gpio_get(A11),
-    gpio_get(A12)
+
+unsigned readAddress()
+{
+  unsigned address_pins[] = {
+    A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12,
   };
-  long int ret = strtol(address, NULL, 2);
-  return ret;
+	unsigned value = 0;
+	for (unsigned i = 0; i < 13; ++i)
+		value = value << 1 | gpio_get(address_pins[i]);
+	return value;
 }
 
-void outputByte(long int address) {
-  byte = stock_rom[address];
-
+void outputByte(unsigned address) {
+  unsigned data_pins[] = {
+    D0, D1, D2, D3, D4, D5, D6, D7,
+  };
+  unsigned byte = stock_rom[address];
+  for (unsigned i = 8 - 1; i < 8; --i) {
+		gpio_put(data_pins[i], byte & 1);
+		byte = byte >> 1;
+	}
 }
 
 void pinSetup() {
   //Initialise pins
-  for (i=A0; i<=CE; ++i) {
+  for (unsigned i=A0; i<=CE; ++i) {
     gpio_init(i);
   }
 
   //Setup Address Lines
-  for (a=A0; a<=A12; ++a) {
+  for (unsigned a=A0; a<=A12; ++a) {
     gpio_set_dir(a, GPIO_IN);
   }
 
   //Setup Data Lines
-  for (d=D0; d<=D7; ++d) {
+  for (unsigned d=D0; d<=D7; ++d) {
     gpio_set_dir(d, GPIO_OUT);
   }
 
